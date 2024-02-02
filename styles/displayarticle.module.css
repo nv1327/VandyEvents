@@ -1,0 +1,37 @@
+.container h1 {
+    @apply text-4xl my-4 font-extrabold;
+}
+
+.container h2 {
+    @apply text-2xl mb-6 mt-12 font-extrabold;
+}
+
+.container h3 {
+    @apply text-lg mb-2 mt-8 font-semibold;
+}
+
+.container b,
+.container strong {
+    @apply font-bold;
+}
+
+/* Lists */
+.container li {
+    @apply list-decimal pl-4 ml-4;
+}
+
+.container ol {
+    @apply list-decimal pl-4;
+}
+
+.container ul {
+    @apply list-disc pl-4;
+}
+
+.container p {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
