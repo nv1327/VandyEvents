@@ -16,8 +16,8 @@ export default async function SignIn() {
       <div className="flex flex-col justify-between max-w-lg p-3 m-auto w-80 ">
         <div className="flex justify-center pb-12 ">
           <div className="flex items-center px-4">
-            <img className="h-11 rounded-xl" src="/logo.jpg" alt="TypeMule AI" />
-            <p className="ml-4 text-black text-center w-full text-2xl font-normal">TypeMule AI</p>
+            <img className="h-11 rounded-xl" src="/logo.jpg" alt="Vandy Events" />
+            <p className="ml-4 text-black text-center w-full text-2xl font-normal">Vandy Events</p>
           </div>
         </div>
         <AuthUI />
