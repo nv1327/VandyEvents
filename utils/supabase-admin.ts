@@ -79,6 +79,12 @@ const createOrRetrieveCustomer = async ({
     });
 
     // Now insert the customer ID into our Supabase mapping table.
+    const { error: userError } = await supabaseAdmin
+      .from('users')
+      .insert([{ id: uuid }]);
+    if (userError) throw userError;
+
+    // Now insert the customer ID into our Supabase mapping table.
     const { error: supabaseError } = await supabaseAdmin
       .from('customers')
       .insert([{ id: uuid, stripe_customer_id: customer.id }]);
