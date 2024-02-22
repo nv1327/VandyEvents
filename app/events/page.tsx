@@ -31,6 +31,27 @@ export default async function EventsMainPage() {
         console.log("Events retrieved:", data);
     }
 
+    const { data: user_name, error: error_name } = await supabase
+        .from('users')
+        .select('*');
+    if (error_name) {
+        console.error("Error getting users", error_name);
+    } else {
+        console.log("Users retrieved:", user_name);
+    }
+
+    // Map user IDs to user names for easier lookup
+    const userIdToName: { [key: string]: string } = (user_name || []).reduce<{ [key: string]: string }>((acc, user) => {
+        acc[user.id] = user.first_name + " " + user.last_name; // Assuming 'id' and 'name' are the fields in your users table
+        return acc;
+    }, {});
+
+    // Add user names to events data
+    const eventsWithUserNames = data?.map(event => ({
+        ...event,
+        userName: event.user_id != null ? userIdToName[event.user_id] : 'Unknown User'
+    }));
+
     return (
         <div>
             <nav className="flex" aria-label="Breadcrumb">
@@ -65,24 +86,30 @@ export default async function EventsMainPage() {
                                 <table className="min-w-full divide-y divide-gray-300 bg-white md:rounded-lg">
                                     <thead>
                                         <tr>
-                                            <th scope="col" className="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-[50%]">Name</th>
+                                            <th scope="col" className="py-3.5 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-[25%]">Name</th>
+                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Organizer</th>
                                             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Location</th>
+                                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Event Date</th>
                                             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                                 <a className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600" href="/events/new">Create new</a>
                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 overflow-y-auto">
-                                        {data && data.map(event => (
+                                        {eventsWithUserNames && eventsWithUserNames.map(event => (
                                             <tr key={event.id} className="group hover:bg-gray-100">
                                                 <td className="text-ellipsis overflow-hidden py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                                                     <a className="inline-block w-full">{event.name}</a>
                                                 </td>
-                                                {/*
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    <a className="inline-block w-full">{site.site_url}</a>
+                                                <td className="text-ellipsis overflow-hidden py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                                    <a className="inline-block w-full">{event.userName}</a>
                                                 </td>
-                                        */}
+                                                <td className="text-ellipsis overflow-hidden py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                                    <a className="inline-block w-full">{event.location}</a>
+                                                </td>
+                                                <td className="text-ellipsis overflow-hidden py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                                    <a className="inline-block w-full">{event.date}</a> {/* format this */}
+                                                </td>
                                                 <td className="whitespace-nowrap px-3 text-sm text-gray-500">
                                                     <Link href={`/event/${event.id}`} className="inline-block w-full hidden group-hover:flex justify-start items-center font-semibold">
                                                         View
