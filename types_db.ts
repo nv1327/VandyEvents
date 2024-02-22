@@ -35,20 +35,41 @@ export type Database = {
       events: {
         Row: {
           created_at: string
+          date: string | null
+          description: string | null
+          end_time: string | null
+          equipment: string | null
           id: number
+          location: string | null
           name: string | null
+          num_spots: number | null
+          start_time: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          date?: string | null
+          description?: string | null
+          end_time?: string | null
+          equipment?: string | null
           id?: number
+          location?: string | null
           name?: string | null
+          num_spots?: number | null
+          start_time?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          date?: string | null
+          description?: string | null
+          end_time?: string | null
+          equipment?: string | null
           id?: number
+          location?: string | null
           name?: string | null
+          num_spots?: number | null
+          start_time?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -220,7 +241,9 @@ export type Database = {
         Row: {
           avatar_url: string | null
           billing_address: Json | null
+          email: string | null
           first_name: string | null
+          grade_level: string | null
           id: string
           last_name: string | null
           payment_method: Json | null
@@ -228,7 +251,9 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           billing_address?: Json | null
+          email?: string | null
           first_name?: string | null
+          grade_level?: string | null
           id: string
           last_name?: string | null
           payment_method?: Json | null
@@ -236,7 +261,9 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           billing_address?: Json | null
+          email?: string | null
           first_name?: string | null
+          grade_level?: string | null
           id?: string
           last_name?: string | null
           payment_method?: Json | null
