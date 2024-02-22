@@ -23,7 +23,7 @@ export default async function NewPage() {
 
         const data = await addSite(formData, cookies);
         if (data) {
-            redirect("/sites/" + data[0].id);
+            redirect("/events/" + data[0].id);
         }
     }
 

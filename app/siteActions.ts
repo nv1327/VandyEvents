@@ -11,7 +11,9 @@ export async function addSite(formData: FormData, cookies: any) {
     const location = formData.get('location') as string;
     const description = formData.get('description') as string;
     const equipment = formData.get('equipment') as string;
-    const numSpots = formData.get('numSpots') as string; 
+    const numSpots = formData.get('numSpots') as string;
+
+    console.log(formData);
 
 
     const session = await getSession();
@@ -20,12 +22,12 @@ export async function addSite(formData: FormData, cookies: any) {
 
     const supabase = createServerActionClient<Database>({ cookies });
     const { data, error } = await supabase
-        .from('user_sites')
+        .from('events')
         .insert([
             {
                 user_id: user?.id ?? "",
-                title: title,
                 date: date,
+                name: title,
                 start_time: startTime,
                 end_time: endTime,
                 location: location,
