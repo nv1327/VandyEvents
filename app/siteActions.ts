@@ -2,11 +2,17 @@ import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types_db';
 import { getSession } from '@/app/supabase-server';
 
-export async function addSite (formData: FormData, cookies: any) {
-    "use server"
 
-    const siteName = formData.get('siteName') as string;
-    const siteUrl = formData.get('siteUrl') as string;
+export async function addSite(formData: FormData, cookies: any) {
+    const title = formData.get('title') as string;
+    const date = formData.get('date') as string;
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
+    const location = formData.get('location') as string;
+    const description = formData.get('description') as string;
+    const equipment = formData.get('equipment') as string;
+    const numSpots = formData.get('numSpots') as string; 
+
 
     const session = await getSession();
 
@@ -18,8 +24,14 @@ export async function addSite (formData: FormData, cookies: any) {
         .insert([
             {
                 user_id: user?.id ?? "",
-                site_name: siteName,
-                site_url: siteUrl,
+                title: title,
+                date: date,
+                start_time: startTime,
+                end_time: endTime,
+                location: location,
+                description: description,
+                equipment: equipment,
+                num_spots: numSpots
             },
         ])
         .select('*');
