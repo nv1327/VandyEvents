@@ -33,7 +33,7 @@ export async function addSite(formData: FormData, cookies: any) {
                 location: location,
                 description: description,
                 equipment: equipment,
-                num_spots: parseInt(numSpots)
+                num_spots: numSpots
             },
         ])
         .select('*');
