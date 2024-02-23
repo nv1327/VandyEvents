@@ -7,6 +7,44 @@ import { Database } from '@/types_db';
 import { cookies } from 'next/headers';
 import Link from "next/link";
 
+// Define TypeScript types for the comments
+interface CommentType {
+    id: number;
+    text: string;
+    author: string;
+    replies: CommentType[];
+}
+
+// Dummy comments data
+const dummyComments: CommentType[] = [
+    {
+        id: 1,
+        text: "Who's bringing the equipment?",
+        author: "User1",
+        replies: [
+            {
+                id: 2,
+                text: "I have a net and a ball.",
+                author: "User2",
+                replies: [
+                    {
+                        id: 3,
+                        text: "I have the rest of the equipment.",
+                        author: "User3",
+                        replies: [],
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        id: 4,
+        text: "I'm gonna be a bit late so save me a seat.",
+        author: "User4",
+        replies: [],
+    },
+];
+
 export default async function EventsIndividualPage({ params }: { params: { id: string } }) {
 
     const [session, subscription] = await Promise.all([
@@ -57,6 +95,19 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
     } else {
         console.log("Owner retrieved:", ownerData);
     }
+
+    // Recursive function to render comments and their replies
+    const renderComments = (comments: CommentType[]) => {
+        return comments.map((comment) => (
+            <div key={comment.id} className="ml-6 mt-4">
+                <div className="bg-gray-100 p-4 rounded">
+                    <p className="text-sm font-semibold text-gray-700">{comment.author}</p>
+                    <p className='text-gray-600'>{comment.text}</p>
+                </div>
+                {comment.replies.length > 0 && renderComments(comment.replies)}
+            </div>
+        ));
+    };
 
     return (
         <div>
@@ -115,39 +166,46 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
                     </div>
                 </div>
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                <div className="px-4 py-5 sm:px-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">{event && event[0].name}</h3>
-                    <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
+                    <div className="px-4 py-5 sm:px-6">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">{event && event[0].name}</h3>
+                        <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
+                    </div>
+                    <div className="border-t border-gray-200">
+                        <dl>
+                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <dt className="text-sm font-medium text-gray-500">Date</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].date}</dd>
+                            </div>
+                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <dt className="text-sm font-medium text-gray-500">Time</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].start_time} - {event && event[0].end_time}</dd>
+                            </div>
+                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <dt className="text-sm font-medium text-gray-500">Location</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].location}</dd>
+                            </div>
+                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <dt className="text-sm font-medium text-gray-500">Description</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].description}</dd>
+                            </div>
+                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <dt className="text-sm font-medium text-gray-500">Equipment Needed</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].equipment}</dd>
+                            </div>
+                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                <dt className="text-sm font-medium text-gray-500">Number of Spots</dt>
+                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].num_spots}</dd>
+                            </div>
+                        </dl>
+                    </div>
                 </div>
-                <div className="border-t border-gray-200">
-                    <dl>
-                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm font-medium text-gray-500">Date</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].date}</dd>
-                        </div>
-                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm font-medium text-gray-500">Time</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].start_time} - {event && event[0].end_time}</dd>
-                        </div>
-                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm font-medium text-gray-500">Location</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].location}</dd>
-                        </div>
-                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm font-medium text-gray-500">Description</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].description}</dd>
-                        </div>
-                        <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm font-medium text-gray-500">Equipment Needed</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].equipment}</dd>
-                        </div>
-                        <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt className="text-sm font-medium text-gray-500">Number of Spots</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].num_spots}</dd>
-                        </div>
-                    </dl>
+
+                <div className="mt-8">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">Comments</h3>
+                    <div className="mt-4">
+                        {renderComments(dummyComments)}
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     );
