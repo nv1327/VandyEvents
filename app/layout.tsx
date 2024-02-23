@@ -41,6 +41,8 @@ export const metadata = {
   }
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
   // Layouts must accept a children prop.
   // This will be populated with nested layouts or pages
