@@ -127,7 +127,7 @@ export default async function EventsMainPage() {
                                                     <a className="inline-block w-full">{event.date}</a> {/* format this */}
                                                 </td>
                                                 <td className="whitespace-nowrap px-3 text-sm text-gray-500">
-                                                    <Link href={`/event/${event.id}`} className="inline-block w-full hidden group-hover:flex justify-start items-center font-semibold">
+                                                    <Link href={`/events/${event.id}`} className="inline-block w-full hidden group-hover:flex justify-start items-center font-semibold">
                                                         View
                                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" aria-hidden="true" className="ml-2 h-4 w-4">
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
