@@ -42,7 +42,7 @@ export type Database = {
           id: number
           location: string | null
           name: string | null
-          num_spots: number | null
+          num_spots: string | null
           start_time: string | null
           user_id: string | null
         }
@@ -55,7 +55,7 @@ export type Database = {
           id?: number
           location?: string | null
           name?: string | null
-          num_spots?: number | null
+          num_spots?: string | null
           start_time?: string | null
           user_id?: string | null
         }
@@ -68,7 +68,7 @@ export type Database = {
           id?: number
           location?: string | null
           name?: string | null
-          num_spots?: number | null
+          num_spots?: string | null
           start_time?: string | null
           user_id?: string | null
         }
