@@ -22,6 +22,22 @@ export default async function SettingsPage() {
 
     console.log(user);
 
+    //check for vanderbilt email using this
+    function getSecondPart(str: string) {
+        return str.split('@')[1];
+    }
+
+    if (user && user.email) {
+        if (getSecondPart(user.email) != "vanderbilt.edu") {
+            console.log("Not a Vandy email");
+            return redirect('/invalidemail');
+        }
+    } else {
+        console.log("User or user.email is undefined");
+    }
+
+    //---- vanderbilt email check function above
+
     const supabase = createServerActionClient<Database>({ cookies });
     const { data, error } = await supabase
         .from('users')
