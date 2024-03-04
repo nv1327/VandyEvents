@@ -38,9 +38,41 @@ export async function addSite(formData: FormData, cookies: any) {
         ])
         .select('*');
     if (error) {
-        console.error("Error adding site:", error);
+        console.error("Error adding event:", error);
     } else {
-        console.log("Site added successfully:", data);
+        console.log("Event added successfully:", data);
+        return data;
+    }
+}
+
+export async function updateProfile(formData: FormData, cookies: any) {
+    const first_name = formData.get('first_name') as string;
+    const last_name = formData.get('last_name') as string;
+    //const email = formData.get('email') as string;
+    const grade_level = formData.get('grade_level') as string;
+
+    console.log(formData);
+
+
+    const session = await getSession();
+
+    const user = session?.user;
+
+    const supabase = createServerActionClient<Database>({ cookies });
+    const { data, error } = await supabase
+        .from('users')
+        .update(
+            {
+                first_name: first_name,
+                last_name: last_name,
+                grade_level: grade_level
+            },
+        )
+        .eq('id', user?.id ?? "");
+    if (error) {
+        console.error("Error updating user:", error);
+    } else {
+        console.log("User updated successfully:", data);
         return data;
     }
 }
