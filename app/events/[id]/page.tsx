@@ -101,6 +101,18 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
     if (ownerData !== null && ownerData.length > 0) {
         isOwner = user?.id === (ownerData[0].id || null);
     }
+    
+    const { data: signedUp, error: signupError } = await supabase
+        .from('event_signups')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('event_id', params.id)
+        .single();
+    if (ownerError) {
+        console.error("Error getting event signup", signupError);
+    } else {
+        console.log("Signup retrieved:", signedUp);
+    }
 
     // Recursive function to render comments and their replies
     const renderComments = (comments: CommentType[]) => {
@@ -165,18 +177,36 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
                             <a className="border-indigo-500 text-indigo-600 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id)}>
                                 Overview
                             </a>
-                            {isOwner ? 
-                            <a className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id) + "/settings"}>
-                                Settings
-                            </a> : null
+                            {isOwner ?
+                                <a className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id) + "/settings"}>
+                                    Settings
+                                </a> : null
                             }
                         </nav>
                     </div>
                 </div>
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <div className="px-4 py-5 sm:px-6">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">{event && event[0].name}</h3>
-                        <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
+                    <div className='flex flex-row justify-between items-center'>
+                        <div className="px-4 py-5 sm:px-6">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">{event && event[0].name}</h3>
+                            <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
+                        </div>
+                        {!isOwner && signedUp == null && (
+                            <div className="">
+                                <button
+                                    className="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-2 px-4 mr-8 rounded">
+                                    Sign Up
+                                </button>
+                            </div>
+                        )}
+                        {!isOwner && signedUp != null && (
+                            <div className="">
+                                <button
+                                    className="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 mr-8 rounded">
+                                    Signed Up
+                                </button>
+                            </div>
+                        )}
                     </div>
                     <div className="border-t border-gray-200">
                         <dl>
