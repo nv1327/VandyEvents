@@ -6,6 +6,8 @@ import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types_db';
 import { cookies } from 'next/headers';
 import Link from "next/link";
+import EventSignUpButton from './eventsignupbutton.client';
+import EventCancelSignupButton from './eventcancelsignupbutton.client';
 
 // Define TypeScript types for the comments
 interface CommentType {
@@ -191,21 +193,11 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
                             <h3 className="text-lg leading-6 font-medium text-gray-900">{event && event[0].name}</h3>
                             <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
                         </div>
-                        {!isOwner && signedUp == null && (
-                            <div className="">
-                                <button
-                                    className="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-2 px-4 mr-8 rounded">
-                                    Sign Up
-                                </button>
-                            </div>
+                        {!isOwner && signedUp == null && event && (
+                            <EventSignUpButton eventId={event[0]?.id} />
                         )}
-                        {!isOwner && signedUp != null && (
-                            <div className="">
-                                <button
-                                    className="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 mr-8 rounded">
-                                    Signed Up
-                                </button>
-                            </div>
+                        {!isOwner && signedUp != null && event && (
+                            <EventCancelSignupButton eventId={event[0]?.id} />
                         )}
                     </div>
                     <div className="border-t border-gray-200">
