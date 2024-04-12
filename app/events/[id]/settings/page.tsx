@@ -7,6 +7,7 @@ import { Database } from '@/types_db';
 import { cookies } from 'next/headers';
 import Link from "next/link";
 
+
 import { updateSite } from '@/app/siteActions';
 
 // Define TypeScript types for the comments
@@ -16,8 +17,7 @@ interface CommentType {
     author: string;
     replies: CommentType[];
 }
-
-export default async function EventsIndividualPage({ params }: { params: { id: string } }) {
+export default async function EventsSettingsPage({ params }: { params: { id: string } }) {
 
     const [session, subscription] = await Promise.all([
         getSession(),
@@ -67,7 +67,6 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
     } else {
         console.log("Owner retrieved:", ownerData);
     }
-
 
     // Recursive function to render comments and their replies
     const renderComments = (comments: CommentType[]) => {

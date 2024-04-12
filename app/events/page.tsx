@@ -19,7 +19,7 @@ export default async function EventsMainPage() {
 
     const user = session?.user;
 
-    console.log(user);
+    //console.log(user);
 
     //check for vanderbilt email using this
     function getSecondPart(str: string) {
@@ -44,7 +44,7 @@ export default async function EventsMainPage() {
     if (error) {
         console.error("Error getting sites", error);
     } else {
-        console.log("Events retrieved:", data);
+        //console.log("Events retrieved:", data);
     }
 
     const { data: user_name, error: error_name } = await supabase
@@ -53,7 +53,7 @@ export default async function EventsMainPage() {
     if (error_name) {
         console.error("Error getting users", error_name);
     } else {
-        console.log("Users retrieved:", user_name);
+        //console.log("Users retrieved:", user_name);
     }
 
     // Map user IDs to user names for easier lookup

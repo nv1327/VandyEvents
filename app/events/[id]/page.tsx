@@ -6,6 +6,8 @@ import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types_db';
 import { cookies } from 'next/headers';
 import Link from "next/link";
+import EventSignUpButton from './eventsignupbutton.client';
+import EventCancelSignupButton from './eventcancelsignupbutton.client';
 
 // Define TypeScript types for the comments
 interface CommentType {
@@ -96,6 +98,24 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
         console.log("Owner retrieved:", ownerData);
     }
 
+    var isOwner = false; // Default to false
+    // Check if ownerData is not null and not empty before accessing its properties
+    if (ownerData !== null && ownerData.length > 0) {
+        isOwner = user?.id === (ownerData[0].id || null);
+    }
+    
+    const { data: signedUp, error: signupError } = await supabase
+        .from('event_signups')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('event_id', params.id)
+        .single();
+    if (ownerError) {
+        console.error("Error getting event signup", signupError);
+    } else {
+        console.log("Signup retrieved:", signedUp);
+    }
+
     // Recursive function to render comments and their replies
     const renderComments = (comments: CommentType[]) => {
         return comments.map((comment) => (
@@ -150,7 +170,7 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
                     <label htmlFor="tabs" className="sr-only">Select a tab</label>
                     <select id="tabs" name="tabs" className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
                         <option value="/events/[id]">Overview</option>
-                        <option value="/events/[id]/settings">Settings</option>
+                        {isOwner ? <option value="/events/[id]/settings">Settings</option> : null}
                     </select>
                 </div>
                 <div className="hidden sm:block">
@@ -159,16 +179,26 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
                             <a className="border-indigo-500 text-indigo-600 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id)}>
                                 Overview
                             </a>
-                            <a className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id) + "/settings"}>
-                                Settings
-                            </a>
+                            {isOwner ?
+                                <a className="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id) + "/settings"}>
+                                    Settings
+                                </a> : null
+                            }
                         </nav>
                     </div>
                 </div>
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <div className="px-4 py-5 sm:px-6">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">{event && event[0].name}</h3>
-                        <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
+                    <div className='flex flex-row justify-between items-center'>
+                        <div className="px-4 py-5 sm:px-6">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">{event && event[0].name}</h3>
+                            <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
+                        </div>
+                        {!isOwner && signedUp == null && event && (
+                            <EventSignUpButton eventId={event[0]?.id} />
+                        )}
+                        {!isOwner && signedUp != null && event && (
+                            <EventCancelSignupButton eventId={event[0]?.id} />
+                        )}
                     </div>
                     <div className="border-t border-gray-200">
                         <dl>
