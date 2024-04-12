@@ -45,6 +45,48 @@ export async function addSite(formData: FormData, cookies: any) {
     }
 }
 
+
+export async function updateSite(eventId: string, formData: FormData, cookies: any) {
+    const title = formData.get('title') as string;
+    const date = formData.get('date') as string;
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
+    const location = formData.get('location') as string;
+    const description = formData.get('description') as string;
+    const equipment = formData.get('equipment') as string;
+    const numSpots = formData.get('numSpots') as string;
+
+    console.log(formData);
+
+    const session = await getSession();
+    const user = session?.user;
+
+    const supabase = createServerActionClient<Database>({ cookies });
+    const { data, error } = await supabase
+        .from('events')
+        .update({
+            user_id: user?.id ?? "",
+            date: date,
+            name: title,
+            start_time: startTime,
+            end_time: endTime,
+            location: location,
+            description: description,
+            equipment: equipment,
+            num_spots: numSpots
+        })
+        .match({ id: eventId }) // This is how you specify which record to update
+        .select('*');
+
+    if (error) {
+        console.error("Error updating site:", error);
+    } else {
+        console.log("Site updated successfully:", data);
+        return data;
+    }
+}
+
+
 export async function addReport(formData: FormData, cookies: any, site_id: string, total_tokens: number, subscription: any) {
     "use server"
 
