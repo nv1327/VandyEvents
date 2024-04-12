@@ -7,6 +7,16 @@ import { Database } from '@/types_db';
 import { cookies } from 'next/headers';
 import Link from "next/link";
 
+
+import { updateSite } from '@/app/siteActions';
+
+// Define TypeScript types for the comments
+interface CommentType {
+    id: number;
+    text: string;
+    author: string;
+    replies: CommentType[];
+}
 export default async function EventsSettingsPage({ params }: { params: { id: string } }) {
 
     const [session, subscription] = await Promise.all([
@@ -58,109 +68,83 @@ export default async function EventsSettingsPage({ params }: { params: { id: str
         console.log("Owner retrieved:", ownerData);
     }
 
-    var isOwner = false; // Default to false
-    // Check if ownerData is not null and not empty before accessing its properties
-    if (ownerData !== null && ownerData.length > 0) {
-        isOwner = user?.id === (ownerData[0].id || null);
-        if (!isOwner) {
-            return redirect("/events/" + (event && event[0].id));
+    // Recursive function to render comments and their replies
+    const renderComments = (comments: CommentType[]) => {
+        return comments.map((comment) => (
+            <div key={comment.id} className="ml-6 mt-4">
+                <div className="bg-gray-100 p-4 rounded">
+                    <p className="text-sm font-semibold text-gray-700">{comment.author}</p>
+                    <p className='text-gray-600'>{comment.text}</p>
+                </div>
+                {comment.replies.length > 0 && renderComments(comment.replies)}
+            </div>
+        ));
+    };
+
+    const handleUpdateSite = async (formData: FormData) => {
+        "use server"
+
+        const data = await updateSite(event_id, formData, cookies);
+        if (data) {
+            redirect("/events/" + data[0].id);
         }
     }
+ 
 
-
+    if (ownerData?.[0]?.id == user.id){
     return (
-        <div>
-            <nav className="flex" aria-label="Breadcrumb">
-                <ol role="list" className="flex items-center space-x-4">
-                    <li>
-                        <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-5 w-5 flex-shrink-0 text-gray-400"><path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd">
-                            </path>
-                            </svg>
-                            <span className="sr-only">Home</span>
-                        </div>
-                    </li>
-                    <li>
-                        <div className="flex items-center">
-                            <svg className="h-5 w-5 flex-shrink-0 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z">
-                                </path>
-                            </svg>
-                            <a className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700 " href="/events">
-                                Events
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div className="flex items-center">
-                            <svg className="h-5 w-5 flex-shrink-0 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z">
-                                </path>
-                            </svg>
-                            <a className="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700" href={"/events/" + (event && event[0].id)}>
-                                {event && event[0].name}
-                            </a>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
-            <div className="mt-4">
-                <div className="sm:hidden">
-                    <label htmlFor="tabs" className="sr-only">Select a tab</label>
-                    <select id="tabs" name="tabs" className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                        <option value="/events/[id]">Overview</option>
-                        {isOwner ? <option value="/events/[id]/settings">Settings</option> : null}
-                    </select>
-                </div>
-                <div className="hidden sm:block">
-                    <div className="border-b border-gray-200">
-                        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                            <a className="border-transparent text-gray-500 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id)}>
-                                Overview
-                            </a>
-                            {isOwner ? 
-                            <a className="border-indigo-500 text-indigo-600 hover:text-gray-700 hover:border-gray-300 cursor-pointer whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" href={"/events/" + (event && event[0].id) + "/settings"}>
-                                Settings
-                            </a> : null
-                            }
-                        </nav>
-                    </div>
-                </div>
-                <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <div className="px-4 py-5 sm:px-6">
-                        <h3 className="text-lg leading-6 font-medium text-gray-900">Make this page editable: {event && event[0].name}</h3>
-                        <p className="mt-1 max-w-2xl text-sm text-gray-500">Hosted by {ownerData && ownerData[0].first_name + " " + ownerData[0].last_name}</p>
-                    </div>
-                    <div className="border-t border-gray-200">
-                        <dl>
-                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                <dt className="text-sm font-medium text-gray-500">Date</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].date}</dd>
-                            </div>
-                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                <dt className="text-sm font-medium text-gray-500">Time</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].start_time} - {event && event[0].end_time}</dd>
-                            </div>
-                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                <dt className="text-sm font-medium text-gray-500">Location</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].location}</dd>
-                            </div>
-                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                <dt className="text-sm font-medium text-gray-500">Description</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].description}</dd>
-                            </div>
-                            <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                <dt className="text-sm font-medium text-gray-500">Equipment Needed</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].equipment}</dd>
-                            </div>
-                            <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                                <dt className="text-sm font-medium text-gray-500">Number of Spots</dt>
-                                <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{event && event[0].num_spots}</dd>
-                            </div>
-                        </dl>
-                    </div>
-                </div>
-            </div>
+        <div className="font-black">
+        <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-gray-900">Edit Event</h1>
         </div>
-    );
+        <form action={handleUpdateSite}>
+            <div className="flex flex-col space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mt-4">Title</label>
+                    <input type="text" name="title" id="title" placeholder={event?.[0]?.name || 'title'} className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <input type="date" name="date" id="date" value={event?.[0]?.date || 'date'} className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                        <input type="time" name="startTime" id="startTime" value={event?.[0]?.start_time || 'start time'}  className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">End Time</label>
+                        <input type="time" name="endTime" id="endTime" value={event?.[0]?.end_time || 'end time'} className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Location</label>
+                    <input type="text" name="location" id="location" placeholder={event?.[0]?.location || 'Location'}  className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea name="description" id="description" rows={4} placeholder={event?.[0]?.description || 'Description'}  className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Number of Spots</label>
+                    <input type="number" name="numSpots" id="numSpots" placeholder={event?.[0]?.num_spots || 'Number of Spots'} className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Equipment</label>
+                    <input type="text" name="equipment" id="equipment" placeholder={event?.[0]?.equipment || 'Equipment'} className="font-normal pl-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+                <button type="submit" className="group relative flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white focus:outline-none focus:ring-2  focus:ring-offset-2 hover:bg-indigo-700 focus:ring-indigo-500 w-full sm:max-w-md rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Update Event</button>
+            </div>
+        </form>
+    </div>
+    )
+    } else {
+        return (
+            <div className="font-black">
+        <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-gray-900">Not the Owner of This Event</h1>
+        </div>
+        </div>
+        )
+    }
 }
