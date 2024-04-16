@@ -3,6 +3,40 @@ import { Database } from '@/types_db';
 import { getSession } from '@/app/supabase-server';
 
 
+export async function addComment(formData: FormData, cookies: any, eventId: number, parentId: number | null = null) {
+    const text = formData.get('text') as string;
+    const userId = formData.get('userId') as string;  // Assuming the user's ID is passed in the form
+
+    if (!text || text.trim().length === 0) {
+        console.error("Error: Comment text is required.");
+        return { error: "Comment text is required." };
+    }
+
+    const supabase = createServerActionClient<Database>({ cookies });
+
+    const { data, error } = await supabase
+        .from('comments')
+        .insert([
+            {
+                event_id: eventId,
+                text: text,
+                user_id: userId,
+                parent_id: parentId  // This can be null if it's not a reply to another comment
+            },
+        ])
+        .select('*');
+
+    if (error) {
+        console.error("Error adding comment:", error);
+        return { error: error.message };
+    } else {
+        console.log("Comment added successfully:", data);
+        return { data };
+    }
+}
+
+
+
 export async function addSite(formData: FormData, cookies: any) {
     const title = formData.get('title') as string;
     const date = formData.get('date') as string;

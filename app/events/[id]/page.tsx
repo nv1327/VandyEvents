@@ -8,42 +8,39 @@ import { cookies } from 'next/headers';
 import Link from "next/link";
 import EventSignUpButton from './eventsignupbutton.client';
 import EventCancelSignupButton from './eventcancelsignupbutton.client';
+import CommentPostButton from './commentbutton.client';
 
-// Define TypeScript types for the comments
 interface CommentType {
     id: number;
     text: string;
     author: string;
-    replies: CommentType[];
+    parent_id: number | null;  // Assuming 'parent_id' is used to track nested comments
 }
 
-// Dummy comments data
 const dummyComments: CommentType[] = [
     {
         id: 1,
         text: "Who's bringing the equipment?",
         author: "User1",
-        replies: [
-            {
-                id: 2,
-                text: "I have a net and a ball.",
-                author: "User2",
-                replies: [
-                    {
-                        id: 3,
-                        text: "I have the rest of the equipment.",
-                        author: "User3",
-                        replies: [],
-                    },
-                ],
-            },
-        ],
+        parent_id: null,
+    },
+    {
+        id: 2,
+        text: "I have a net and a ball.",
+        author: "User2",
+        parent_id: 1,
+    },
+    {
+        id: 3,
+        text: "I have the rest of the equipment.",
+        author: "User3",
+        parent_id: 2,
     },
     {
         id: 4,
         text: "I'm gonna be a bit late so save me a seat.",
         author: "User4",
-        replies: [],
+        parent_id: null,
     },
 ];
 
@@ -103,7 +100,7 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
     if (ownerData !== null && ownerData.length > 0) {
         isOwner = user?.id === (ownerData[0].id || null);
     }
-    
+
     const { data: signedUp, error: signupError } = await supabase
         .from('event_signups')
         .select('*')
@@ -116,18 +113,58 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
         console.log("Signup retrieved:", signedUp);
     }
 
-    // Recursive function to render comments and their replies
-    const renderComments = (comments: CommentType[]) => {
-        return comments.map((comment) => (
+    const { data: commentsData, error: commentsError } = await supabase
+        .from('comments')
+        .select(`
+            id,
+            text,
+            created_at,
+            parent_id,
+            user:users(id, first_name, last_name)
+        `)  // Joining with users table to fetch user details
+        .eq('event_id', params.id)
+        .order('created_at', { ascending: true });
+
+    if (commentsError) {
+        console.error('Error fetching comments:', commentsError);
+    } else {
+        //setComments(commentsData);
+        console.log('Comments fetched:', commentsData);
+    }
+
+    // Helper function to find replies
+    function findReplies(comments: CommentType[], parentId: number): CommentType[] {
+        return comments.filter(comment => comment.parent_id === parentId);
+    }
+
+    const formatDate = (dateString: string): string => {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: true 
+        }).format(date);
+    };
+
+    // Recursive render function
+    const renderComments = (comments: CommentType[], parentId: null | number = null) => {
+        return commentsData && commentsData.filter(comment => comment.parent_id === parentId).map((comment) => (
             <div key={comment.id} className="ml-6 mt-4">
                 <div className="bg-gray-100 p-4 rounded">
-                    <p className="text-sm font-semibold text-gray-700">{comment.author}</p>
-                    <p className='text-gray-600'>{comment.text}</p>
+                    <p className="text-md font-semibold text-gray-700">{comment.user?.first_name + " " + comment.user?.last_name}</p>
+                    <p className='text-gray-600 mt-1'>{comment.text}</p>
+                    <p className='text-gray-500 text-xs text-italic mt-1'>{formatDate(comment.created_at)}</p>
                 </div>
-                {comment.replies.length > 0 && renderComments(comment.replies)}
+                <div>
+                    {renderComments(comments, comment.id)}
+                </div>
             </div>
         ));
     };
+
 
     return (
         <div>
@@ -232,6 +269,7 @@ export default async function EventsIndividualPage({ params }: { params: { id: s
 
                 <div className="mt-8">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">Comments</h3>
+                    <CommentPostButton eventId={parseInt(event_id)}></CommentPostButton>
                     <div className="mt-4">
                         {renderComments(dummyComments)}
                     </div>
